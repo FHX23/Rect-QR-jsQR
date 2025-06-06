@@ -12,13 +12,13 @@ export default function QRScanner() {
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }
-
+          video: { facingMode: "environment" } // cámara trasera preferida
         });
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.setAttribute("playsinline", true); // necesario en iOS
+          // Elimina playsinline si da problemas visuales
+          // videoRef.current.setAttribute("playsinline", true);
           await videoRef.current.play();
           requestRef.current = requestAnimationFrame(scanFrame);
         }
@@ -31,7 +31,7 @@ export default function QRScanner() {
     startCamera();
 
     return () => {
-      // detener cámara y animación
+      // Detener cámara y animación
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
       }
@@ -65,13 +65,17 @@ export default function QRScanner() {
     <div className="flex flex-col items-center p-4">
       <video
         ref={videoRef}
-        className="w-full max-w-md rounded transform scale-x-100" // sin espejo
+        autoPlay
+        muted
+        className="w-full max-w-md rounded object-contain bg-black z-10"
       />
       <canvas ref={canvasRef} className="hidden" />
       {qrData && (
-        <p className="mt-4 text-green-600 font-semibold">Código QR: {qrData}</p>
+        <p className="mt-4 text-green-600 font-semibold break-words text-center">
+          Código QR: {qrData}
+        </p>
       )}
-      {error && <p className="text-red-600">{error}</p>}
+      {error && <p className="text-red-600 mt-4">{error}</p>}
     </div>
   );
 }
